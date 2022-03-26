@@ -1,5 +1,4 @@
-pub mod libavcodec;
+mod libavcodec;
 
 fn main() {
-    println!("Hello, world!");
 }
