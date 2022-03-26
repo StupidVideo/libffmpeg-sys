@@ -6,8 +6,9 @@ extern {
     // struct AVFrame;
     // struct AVPacket;
 
-    const FF_COMPRESSION_DEFAULT: u8 = -1;
+    const FF_COMPRESSION_DEFAULT: u8 = -1;                          // #define FF_COMPRESSION_DEFAULT -1
 
+    // struct AVRational; // used in AVCodeContext
     struct AVCodecContext {
         /**
          * information on struct for av_log
@@ -87,6 +88,100 @@ extern {
          * - decoding: Set by user.
          */
         flags: c_int,                                               // int flags;
+    
+        /**
+         * AV_CODEC_FLAG2_*
+         * - encoding: Set by user.
+         * - decoding: Set by user.
+         */
+        flags2: c_int,                                              // int flags2;
+
+        /**
+         * some codecs need / can use extradata like Huffman tables.
+         * MJPEG: Huffman tables
+         * rv10: additional flags
+         * MPEG-4: global headers (they can be in the bitstream or here)
+         * The allocated memory should be AV_INPUT_BUFFER_PADDING_SIZE bytes larger
+         * than extradata_size to avoid problems if it is read with the bitstream reader.
+         * The bytewise contents of extradata must not depend on the architecture or CPU endianness.
+         * Must be allocated with the av_malloc() family of functions.
+         * - encoding: Set/allocated/freed by libavcodec.
+         * - decoding: Set/allocated/freed by user.
+         */
+        extradata: *mut u8,                                         // uint8_t *extradata;
+        extradate_size: c_int,                                      // int extradata_size;
+
+        /**
+         * This is the fundamental unit of time (in seconds) in terms
+         * of which frame timestamps are represented. For fixed-fps content,
+         * timebase should be 1/framerate and timestamp increments should be
+         * identically 1.
+         * This often, but not always is the inverse of the frame rate or field rate
+         * for video. 1/time_base is not the average frame rate if the frame rate is not
+         * constant.
+         *
+         * Like containers, elementary streams also can store timestamps, 1/time_base
+         * is the unit in which these timestamps are specified.
+         * As example of such codec time base see ISO/IEC 14496-2:2001(E)
+         * vop_time_increment_resolution and fixed_vop_rate
+         * (fixed_vop_rate == 0 implies that it is different from the framerate)
+         *
+         * - encoding: MUST be set by user.
+         * - decoding: the use of this field for decoding is deprecated.
+         *             Use framerate instead.
+         */
+        time_base: AVRational,                                  // AVRational time_base;
+
+        /**
+         * For some codecs, the time base is closer to the field rate than the frame rate.
+         * Most notably, H.264 and MPEG-2 specify time_base as half of frame duration
+         * if no telecine is used ...
+         *
+         * Set to time_base ticks per frame. Default 1, e.g., H.264/MPEG-2 set it to 2.
+         */
+        ticks_per_frame: c_int,                                 // int ticks_per_frame;
+
+        /**
+         * Codec delay.
+         *
+         * Encoding: Number of frames delay there will be from the encoder input to
+         *           the decoder output. (we assume the decoder matches the spec)
+         * Decoding: Number of frames delay in addition to what a standard decoder
+         *           as specified in the spec would produce.
+         *
+         * Video:
+         *   Number of frames the decoded output will be delayed relative to the
+         *   encoded input.
+         *
+         * Audio:
+         *   For encoding, this field is unused (see initial_padding).
+         *
+         *   For decoding, this is the number of samples the decoder needs to
+         *   output before the decoder's output is valid. When seeking, you should
+         *   start decoding this many samples prior to your desired seek point.
+         *
+         * - encoding: Set by libavcodec.
+         * - decoding: Set by libavcodec.
+         */
+        delay: c_int,                                           // int delay;
+
+
+        /* video only */
+        /**
+         * picture width / height.
+         *
+         * @note Those fields may not match the values of the last
+         * AVFrame output by avcodec_receive_frame() due frame
+         * reordering.
+         *
+         * - encoding: MUST be set by user.
+         * - decoding: May be set by the user before opening the decoder if known e.g.
+         *             from the container. Some decoders will require the dimensions
+         *             to be set by the caller. During decoding, the decoder may
+         *             overwrite those values as required while parsing the data.
+         */
+        width: c_int,                                           // int width, height;
+        height: c_int,                                          //
     }
 
     fn encode_frame(avctx: &AVCodecContext, pkt: &AVPacket, pict: &AVFrame, got_packet: c_int) -> c_int; // (AVCodecContext *avctx, AVPacket *pkt,const AVFrame *pict, int *got_packet)
