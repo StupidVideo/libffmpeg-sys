@@ -7,10 +7,10 @@
             ],
             "defines": [],
             "macFrameworkPath": [],
-            "compilerPath": "/opt/homebrew/bin/gcc-11",
-            "cStandard": "gnu17",
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "gnu99",
             "cppStandard": "gnu++17",
-            "intelliSenseMode": "macos-gcc-arm64"
+            "intelliSenseMode": "macos-clang-arm64"
         }
     ],
     "version": 4

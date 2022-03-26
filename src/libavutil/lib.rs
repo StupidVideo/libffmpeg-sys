@@ -4,4 +4,5 @@
 
 use libc::*;
 
-include!("./bindings.rs");
+include!("./bindings/libavcodec/bindings.rs", 
+    "./bindings/libavutil/bindings.rs");
